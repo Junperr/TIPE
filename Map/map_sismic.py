@@ -105,10 +105,9 @@ def map_plot (map_back=False, cmap=None, colors_name=None, iterpolate=False, n=1
                 dataframe['geometry'].append(Point((xgrid[i,j],ygrid[i,j])))
         dataframe['geometry']=gpd.GeoSeries(dataframe['geometry'])
         geo_values = gpd.GeoDataFrame(dataframe,crs=crs,geometry=dataframe['geometry'])
-        geo_values1 = gpd.overlay(geo_values,geo_s_pos,how='intersection')
-        return geo_values1,geo_values, geo_s_pos
+        geo_values1 = gpd.overlay(geo_values,japan_map,how='intersection')
         # print(geo_values.head())
-        geo_values.plot(column="values", ax = ax, marker = ',',alpha=0.5,\
+        geo_values1.plot(column="values", ax = ax, marker = ',',alpha=0.5,\
                         markersize = 5, norm=norm, vmax=2000.0, label = 'knt station', cmap=cmap1)
     
     pass
@@ -134,7 +133,7 @@ def interpolate(n):
     geo_values=gpd.GeoDataFrame(dataframe,crs=crs,geometry=dataframe['geometry'])
     geo_values.plot(column='values',cmap='accel')
     
-
+    
 def heat_map( bins=(100,100), smoothing=1.3, cmap='jet',colors=None):
     fig,ax = plt.subplots(figsize=(40,40))
     x=[s_pos["long"][i] for i in range (len(s_pos["long"]))]
@@ -157,3 +156,4 @@ def heat_map( bins=(100,100), smoothing=1.3, cmap='jet',colors=None):
     plt.colorbar(plt.cm.ScalarMappable(cmap=cmap))
     plt.gca().invert_yaxis()
     plt.show()
+    
