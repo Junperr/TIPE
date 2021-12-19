@@ -42,7 +42,7 @@ geo_s_pos_s = gpd.GeoDataFrame(s_pos_s,crs=crs,geometry=geometry_s)
 accel_colors=['accel','#ffffff','#99b3e6','#4073d9','#33ccad','#06d039','#99ff60','#ffff00','#ff9a34','#ff6275','#990000']
 
 
-def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=False, n=100,msize=10):
+def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=False, n=100,msize=50):
     """
 
     Parameters:
@@ -64,9 +64,10 @@ def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=
     None.
 
     """
-    fig,ax = plt.subplots(figsize=(40,40))
+    fig,ax = plt.subplots(figsize=(25,25))
     ax.set_facecolor('#d3ffff')
-    
+    ax.set_ylim([min(s_pos['lat'])-1,max(s_pos['lat'])+1])
+    ax.set_xlim([min(s_pos['long'])-1,max(s_pos['long'])+1])
     if map_back:
         japan_f.plot(ax=ax,color="w",edgecolor="w",zorder=1)
         japan_c.plot(ax=ax,color="k",edgecolor="none",linewidth=0.5,zorder=3)
@@ -92,12 +93,12 @@ def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=
 # met la barre à l'échelle et créer la norme et ajoute des graduations
         
     geo_s_pos[geo_s_pos['network'] == 'kik'].plot(column="PGA", ax = ax, marker = ',',\
-                markersize = 15,edgecolor="black",linewidth=0.5,vmax=2000.0 ,norm=norm,label = 'kik station',cmap=cmap1,zorder=4)
+                markersize = 85,edgecolor="black",linewidth=0.5,vmax=2000.0 ,norm=norm,label = 'kik station',cmap=cmap1,zorder=4)
 
     geo_s_pos[geo_s_pos['network'] == 'knt'].plot(column="PGA", ax = ax, marker = '^',\
-             markersize=20 ,edgecolor="black",linewidth=0.5,norm=norm, vmax=2000.0, label = 'knt station', cmap=cmap1,zorder=6)
+             markersize=100 ,edgecolor="black",linewidth=0.5,norm=norm, vmax=2000.0, label = 'knt station', cmap=cmap1,zorder=6)
     # on affiche les sismogrpahes du réseaux kik et knt qui ont percu le seisme 
-    geo_s_pos_s.plot(ax=ax,marker='*',color='red',markersize=90,label='sismic event',zorder=5)
+    geo_s_pos_s.plot(ax=ax,marker='*',color='red',markersize=125,label='sismic event',zorder=5)
     plt.legend(loc=4,fontsize=40,markerscale=6)
     # ajout d el'épicentre et de la legende
     # plt.plot(np.linspace(125,155,500),(10*np.cos(np.linspace(125,155,500))+30))
@@ -119,7 +120,7 @@ def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=
         
         interpolated_values=griddata(point,np.array(s_pos['PGA']),(xgrid,ygrid),method='linear',fill_value=0.0)
         #on créer une grille de n points sur le plus petit rectangle contenant tout les sismographes
-        print(len(xgrid),len(xgrid[0]),len(ygrid),len(ygrid[0]),sep='\n')
+        # print(len(xgrid),len(xgrid[0]),len(ygrid),len(ygrid[0]),sep='\n')
         dataframe={'values' : [],'geometry':[]}
         for i in range (len(xgrid)):
             for j in range (len(xgrid[0])):
@@ -132,7 +133,7 @@ def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=
         geo_values1.plot(column="values", ax = ax, marker = '.',\
                         markersize = msize, norm=norm, vmax=2000.0, label = 'knt station', cmap=cmap1,zorder=2)
         # inprogress(ax,geo_values,map_back)
-        
+
     pass
 
 def inprogress(ax,geo_values,map_back):
