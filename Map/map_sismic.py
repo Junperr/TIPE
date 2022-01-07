@@ -2,14 +2,14 @@
 """
 Created on Fri Oct  8 16:52:36 2021
 
-@author: Xtrem
+@author: Junper
 """
 import sqlite3 as sql
 import pandas as pd 
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-from shapely.geometry import Point,Polygon
+import shapely.geometry as geo
 from scipy.interpolate import griddata
 import numpy as np 
 from scipy import ndimage
@@ -28,7 +28,7 @@ crs={'init': 'epsg:4326'}
 # système de coordonnées
 
 
-geometry = [Point(s_pos["long"][i],s_pos["lat"][i]) for i in range (len(s_pos["long"]))]
+geometry = [geo.Point(s_pos["long"][i],s_pos["lat"][i]) for i in range (len(s_pos["long"]))]
 
 geo_s_pos = gpd.GeoDataFrame(s_pos,crs=crs,geometry=geometry)
     
@@ -36,23 +36,30 @@ s_pos_s=pd.read_sql('SELECT lat,long FROM seismes where id=3',\
             sql.connect('C:/Users/Xtrem/OneDrive/Documents/°Prepa/Info/TIPE\
 /data_gestion/sismic1.db'))
 
-geometry_s = [Point(s_pos_s["long"][i],s_pos_s["lat"][i]) for i in range (len(s_pos_s["long"]))]
+geometry_s = [geo.Point(s_pos_s["long"][i],s_pos_s["lat"][i]) for i in range (len(s_pos_s["long"]))]
 geo_s_pos_s = gpd.GeoDataFrame(s_pos_s,crs=crs,geometry=geometry_s)
 
+accel_colors=['accel','#fefefe','#99a7da','#4096df','#33ccad','#99ff60','#ffff00','#ff9a34','#ff6275','#990000']
 
-def map_plot (map_back=False, cmap=None, colors_name=None, iterpolate=False, n=10000):
+
+def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=False, n=10000):
     """
 
-    Parameters
-    ----------
-    map_back : Bool, optional
-        Si True affiche la carte en fond sinon uniquement les points.
-        The default is False.
-    cmap : Colormap, optional
-        To force a colormap. The default is None.
-    colors_name : List, optional
-        [string,arg*] arg are hexcolor. The default is None.
-    If both cmap and colors_name are None: we select 'jet' colormap
+    Parameters:
+        map_back : Bool, optional
+            Si True affiche la carte en fond sinon uniquement les points.
+            The default is True.
+        cmap : Colormap, optional
+            To force a colormap. The default is None.
+        colors_name : List, optional
+            [string,arg*] arg are colors. The default is accel_colors.
+        interpolate: Bool, optional
+            Si True affiche le rendu avec une interpollation réaliser avec n
+                points sur une grille comprise entre les coordonnées minimum
+                et maximum des sismographes qui ont détecté le séisme
+    
+    USE:
+        Rendu de l'accéleration maximal d'un séisme sur le japon
     Returns
     -------
     None.
@@ -71,7 +78,7 @@ def map_plot (map_back=False, cmap=None, colors_name=None, iterpolate=False, n=1
         except:
             cmap=colors_name[0]
 
-    #création de la colormap si elle n'est pas déjà créée
+    # création de la colormap si elle n'est pas déjà créée
     cmap1=plt.get_cmap(cmap,10)
     
     bounds=np.array([0.0, 0.2, 1.0, 4.0, 15.0, 50.0, 100.0, 200.0, 400.0, 750.0, 2000.0])
@@ -102,21 +109,39 @@ def map_plot (map_back=False, cmap=None, colors_name=None, iterpolate=False, n=1
         for i in range (int(n)):
             for j in range (int(n)):
                 dataframe['values'].append(interpolated_values[i,j])
-                dataframe['geometry'].append(Point((xgrid[i,j],ygrid[i,j])))
+                dataframe['geometry'].append(geo.Point((xgrid[i,j],ygrid[i,j])))
         dataframe['geometry']=gpd.GeoSeries(dataframe['geometry'])
         geo_values = gpd.GeoDataFrame(dataframe,crs=crs,geometry=dataframe['geometry'])
-        geo_values1 = gpd.overlay(geo_values,japan_map,how='intersection')
-        # print(geo_values.head())
-        geo_values1.plot(column="values", ax = ax, marker = ',',alpha=0.5,\
-                        markersize = 5, norm=norm, vmax=2000.0, label = 'knt station', cmap=cmap1)
-    
+        # geo_values1 = gpd.overlay(geo_values,japan_map,how='intersection')
+        # # print(geo_values.head())
+        # geo_values1.plot(column="values", ax = ax, marker = ',',alpha=0.5,\
+        #                 markersize = 5, norm=norm, vmax=2000.0, label = 'knt station', cmap=cmap1)
+        inprogress(ax,geo_values)
+        
+
     pass
 
-
-accel_colors=['accel','#fefefe','#99a7da','#4096df','#33ccad','#99ff60','#ffff00','#ff9a34','#ff6275','#990000']
+def inprogress(ax,geo_values):
+    list_p = geo.MultiPoint(np.array(geo_values[geo_values['values']>5]['geometry']))
+    points =gpd.GeoDataFrame(geometry = [list_p])
+    convex = gpd.GeoDataFrame(geometry = [list_p.convex_hull])
+    convex.plot(ax = ax, color = 'yellow')
+    points.plot(marker = ',', markersize = 5, ax = ax, color = 'red')
+    
+    
 
 def create_cmap1(color_list,name='test'):
-    
+    """
+    PARAMETER:
+        color_list : list
+            list of colors.
+        name : str, optional
+            the name of your futur colormap. The default is 'test'.
+    USE:
+        Create a color map from a list of color in the order given in color_list        
+    Return:
+        None
+    """
     cmap = colors.LinearSegmentedColormap.from_list(name, color_list)
     plt.register_cmap(name, cmap)
     
@@ -129,7 +154,7 @@ def interpolate(n):
     for i in range (int(n)):
         for j in range (int(n)):
             dataframe['values'].append(interpolated_values[i,j])
-            dataframe['geometry'].append(Point((xgrid[i,j],ygrid[i,j])))
+            dataframe['geometry'].append(geo.Point((xgrid[i,j],ygrid[i,j])))
     geo_values=gpd.GeoDataFrame(dataframe,crs=crs,geometry=dataframe['geometry'])
     geo_values.plot(column='values',cmap='accel')
     
