@@ -40,7 +40,11 @@ geometry_s = [Point(s_pos_s["long"][i],s_pos_s["lat"][i]) for i in range (len(s_
 geo_s_pos_s = gpd.GeoDataFrame(s_pos_s,crs=crs,geometry=geometry_s)
 
 
-def map_plot (map_back=False, cmap=None, colors_name=None, iterpolate=False, n=10000):
+accel_colors=['accel','#fefefe','#99a7da','#4096df','#33ccad','#99ff60','#ffff00','#ff9a34','#ff6275','#990000']
+
+def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=False, n=100,msize=50):
+    #map_plot(interpolate=True,n=300) pour avoir un carte correcte
+
     """
 
     Parameters
@@ -114,7 +118,6 @@ def map_plot (map_back=False, cmap=None, colors_name=None, iterpolate=False, n=1
     pass
 
 
-accel_colors=['accel','#fefefe','#99a7da','#4096df','#33ccad','#99ff60','#ffff00','#ff9a34','#ff6275','#990000']
 
 def create_cmap1(color_list,name='test'):
     
