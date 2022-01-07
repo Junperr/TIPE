@@ -1,4 +1,5 @@
 
+
 # -*- coding: utf-8 -*-
 """
 Created on Thu May 27 17:21:37 2021
@@ -430,3 +431,4 @@ def all_in_one(path='C:/Users/Xtrem/OneDrive/Documents/°Prepa/Info/TIPE\
             #on ferme le fichier ouvert
             os.remove(new_folder+".tar")
             #et on le supprime pour les même raisons
+
