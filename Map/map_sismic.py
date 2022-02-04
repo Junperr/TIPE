@@ -56,14 +56,21 @@ def map_plot (map_back=True, cmap=None, colors_name = accel_colors, interpolate=
         interpolate: Bool, optional
             Si True affiche le rendu avec une interpollation réaliser avec n
                 points par axes 
-    
+        n : TYPE, optional
+            DESCRIPTION. The default is 100.
+        msize : TYPE, optional
+            DESCRIPTION. The default is 50.
     USE:
         Rendu de l'accéleration maximal d'un séisme sur le japon
     Returns
     -------
     None.
+    
+    Plot:
+        une map détaillée du japon
 
     """
+
     fig,ax = plt.subplots(figsize=(25,25))
     ax.set_facecolor('#d3ffff')
     ax.set_ylim([min(s_pos['lat'])-1,max(s_pos['lat'])+1])
